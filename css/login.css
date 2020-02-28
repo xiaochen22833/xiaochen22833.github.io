@@ -1,0 +1,32 @@
+*{padding: 0px;margin: 0px;}
+html,body{width: 100%;height: 100%;}
+body{
+	/*调用循环播放的函数*/
+    animation-name:myfirst;
+    /*一次循环持续时长*/
+    animation-duration: 10s;
+    /*启动时间*/
+    animation-delay:0s;
+    /*循环次数*/
+    animation-iteration-count:infinite;
+    /*动画开始运行*/
+    animation-play-state:running;
+}
+@keyframes myfirst
+{
+    0%   {background:url("images/timg.jpg") center fixed no-repeat;background-size: cover;}
+    25%  {background:url("images/bj01.jpg") center fixed no-repeat;background-size: cover;}
+    50%  {background:url("images/bj02.jpg") center fixed no-repeat;background-size: cover;}
+    75%  {background:url("images/bj03.jpg") center fixed no-repeat;background-size: cover;}
+    100% {background:url("images/timg.jpg") center fixed no-repeat;background-size: cover;}
+    75%  {background:url("images/bj01.jpg") center fixed no-repeat;background-size: cover;}
+    50%  {background:url("images/bj02.jpg") center fixed no-repeat;background-size: cover;}
+    25%  {background:url("images/bj03.jpg") center fixed no-repeat;background-size: cover;}
+    0%   {background:url("images/timg.jpg") center fixed no-repeat;background-size: cover;}
+}
+.form{background: rgba(255,255,255,0.5);width:500px;margin:180px auto;}
+/*阴影*/
+.fa{display: inline-block;top: 27px;left: 6px;position: relative;color: #ccc;}
+input[type="text"],input[type="password"]{padding-left:26px;}
+button[type="submit"],button[type="reset"]{width: 100px;}
+.checkbox{padding-bottom: 7px;}
