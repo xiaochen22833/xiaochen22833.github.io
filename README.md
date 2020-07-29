@@ -1,2 +1,2 @@
 # xiaochen22833.github.io
-Github Pages
+[![Anurag's github stats](https://github-readme-stats.vercel.app/api?username=xiaochen22833)](https://github.com/anuraghazra/github-readme-stats)
