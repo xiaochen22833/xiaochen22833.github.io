@@ -5,6 +5,8 @@
     <title>Tororo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script type="text/javascript" src="bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
 </head>
 
 <body style="background-color: #f3f4f6;"><!-- #f5f6f7 border:dashed 1px #CCC-->
@@ -293,6 +295,19 @@
         // 传入id, 模型path, 重心， 缩放， 默认透明， hover透明度
         loadlive2d("live2dcanvas", modelUrl);
     })();
+
+    /** Vanta birds */
+    VANTA.BIRDS({
+      el: "#your-element-selector",
+      mouseControls: true,
+      touchControls: true,
+      gyroControls: false,
+      minHeight: 200.00,
+      minWidth: 200.00,
+      scale: 1.00,
+      scaleMobile: 1.00,
+      backgroundColor: 0xf3f4f6
+    })
 
 </script>
 </body>
