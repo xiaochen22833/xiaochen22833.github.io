@@ -10,7 +10,7 @@
     <script src="https://www.vantajs.com/dist/vanta.birds.min.js"></script>
 </head>
 
-<body style="background-color: #f3f4f6;"><!-- #f5f6f7 border:dashed 1px #CCC-->
+<body id="body" style="background-color: #f3f4f6;"><!-- #f5f6f7 border:dashed 1px #CCC-->
 <div style="width: 100%;height: 100%;margin-top: 80px;text-align: center;">
     <canvas id="live2dcanvas" width="300" height="400" style=""></canvas>
 </div>
@@ -299,7 +299,7 @@
 
     /** Vanta birds */
     VANTA.BIRDS({
-      el: "#your-element-selector",
+      el: "#body",
       mouseControls: true,
       touchControls: true,
       gyroControls: false,
