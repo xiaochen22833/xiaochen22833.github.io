@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS PRO | 神经元网络</title>
+    
+    <!-- 引入字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <!-- 引入 GSAP 和 Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #030305;
+            --cyan: #00f3ff;
+            --magenta: #ff0055;
+            --violet: #bc13fe;
+            --white: #e6e6e6;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border-glass: rgba(0, 243, 255, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: crosshair; /* 科技感光标 */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--white);
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* --- 加载屏 --- */
+        #loader {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .loader-text {
+            color: var(--cyan);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--cyan);
+        }
+        .loader-bar {
+            width: 300px;
+            height: 2px;
+            background: #222;
+            position: relative;
+            overflow: hidden;
+        }
+        .loader-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: var(--cyan);
+            box-shadow: 0 0 20px var(--cyan);
+        }
+
+        /* --- 3D 画布背景 --- */
+        #webgl-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.2; /* 用于GSAP淡入 */
+        }
+
+        /* 暗角遮罩，保证文字可读性 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 60% 50%, transparent 0%, #030305 90%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* --- 导航栏 --- */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 60px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            mix-blend-mode: difference;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+            color: var(--white);
+            position: relative;
+        }
+        .logo::after {
+            content: '.';
+            color: var(--cyan);
+        }
+
+        .nav-items a {
+            color: var(--white);
+            text-decoration: none;
+            margin-left: 40px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            transition: 0.3s;
+            position: relative;
+        }
+        .nav-items a:hover {
+            opacity: 1;
+            color: var(--cyan);
+            text-shadow: 0 0 8px var(--cyan);
+        }
+        .nav-items a::before {
+            content: '[';
+            margin-right: 5px;
+            opacity: 0;
+            color: var(--cyan);
+            transition: 0.3s;
+        }
+        .nav-items a::after {
+            content: ']';
+            margin-left: 5px;
+            opacity: 0;
+            color: var(--cyan);
+            transition: 0.3s;
+        }
+        .nav-items a:hover::before, .nav-items a:hover::after {
+            opacity: 1;
+        }
+
+        /* --- 主视觉区域 --- */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 0 8%;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 700px;
+            z-index: 2;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid var(--cyan);
+            padding: 5px 15px;
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--cyan);
+            font-size: 0.8rem;
+            margin-bottom: 25px;
+            background: rgba(0, 243, 255, 0.05);
+            clip-path: polygon(0 0, 100% 0, 100% 70%, 95% 100%, 0 100%);
+        }
+        .tag span {
+            width: 8px;
+            height: 8px;
+            background: var(--cyan);
+            margin-right: 10px;
+            box-shadow: 0 0 10px var(--cyan);
+            animation: blink 1s infinite;
+        }
+
+        /* 故障文字效果 */
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 5rem;
+            line-height: 1;
+            margin-bottom: 20px;
+            position: relative;
+            text-transform: uppercase;
+        }
+        
+        .glitch {
+            position: relative;
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+        }
+        .glitch::before {
+            left: 2px;
+            text-shadow: -1px 0 var(--magenta);
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+        .glitch::after {
+            left: -2px;
+            text-shadow: -1px 0 var(--cyan);
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+        }
+
+        p.desc {
+            font-size: 1.2rem;
+            color: #8892b0;
+            line-height: 1.6;
+            margin-bottom: 50px;
+            border-left: 2px solid var(--violet);
+            padding-left: 20px;
+            background: linear-gradient(90deg, rgba(188, 19, 254, 0.05), transparent);
+        }
+
+        /* HUD 按钮 */
+        .btn-group {
+            display: flex;
+            gap: 20px;
+        }
+        .btn {
+            padding: 15px 40px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            transition: 0.3s;
+            background: transparent;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        
+        .btn-primary {
+            background: var(--cyan);
+            color: #000;
+        }
+        .btn-primary:hover {
+            background: #fff;
+            box-shadow: 0 0 30px var(--cyan);
+        }
+        
+        .btn-outline {
+            border: 1px solid rgba(255,255,255,0.3);
+            color: var(--white);
+        }
+        .btn-outline:hover {
+            border-color: var(--magenta);
+            color: var(--magenta);
+            text-shadow: 0 0 10px var(--magenta);
+            background: rgba(255, 0, 85, 0.05);
+        }
+
+        /* 底部统计卡片 */
+        .stats-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 30px 8%;
+            display: flex;
+            gap: 20px;
+            background: linear-gradient(to top, #000, transparent);
+            backdrop-filter: blur(2px);
+        }
+        
+        .stat-card {
+            background: rgba(10, 10, 12, 0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 15px 25px;
+            min-width: 200px;
+            border-left: 2px solid var(--cyan);
+            display: flex;
+            flex-direction: column;
+            clip-path: polygon(0 0, 100% 0, 100% 80%, 90% 100%, 0 100%);
+            transition: 0.3s;
+        }
+        .stat-card:hover {
+            background: rgba(0, 243, 255, 0.05);
+            border-color: var(--cyan);
+        }
+        .stat-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--cyan);
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        /* 动画定义 */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        @keyframes glitch-anim {
+            0% { clip: rect(30px, 9999px, 10px, 0); }
+            20% { clip: rect(80px, 9999px, 90px, 0); }
+            40% { clip: rect(10px, 9999px, 60px, 0); }
+            60% { clip: rect(50px, 9999px, 20px, 0); }
+            80% { clip: rect(70px, 9999px, 50px, 0); }
+            100% { clip: rect(90px, 9999px, 30px, 0); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(10px, 9999px, 80px, 0); }
+            20% { clip: rect(60px, 9999px, 20px, 0); }
+            40% { clip: rect(90px, 9999px, 10px, 0); }
+            60% { clip: rect(30px, 9999px, 50px, 0); }
+            80% { clip: rect(20px, 9999px, 70px, 0); }
+            100% { clip: rect(50px, 9999px, 30px, 0); }
+        }
+
+        /* 装饰线 */
+        .deco-line {
+            position: absolute;
+            right: 50px;
+            top: 50%;
+            width: 1px;
+            height: 40vh;
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-50%);
+        }
+        .deco-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -1px;
+            width: 3px;
+            height: 20%;
+            background: var(--cyan);
+            animation: scan 3s ease-in-out infinite;
+            box-shadow: 0 0 10px var(--cyan);
+        }
+        @keyframes scan {
+            0%, 100% { top: 0; }
+            50% { top: 80%; }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 3rem; }
+            .stats-bar { display: none; }
+            nav { padding: 20px; }
+            .nav-items { display: none; }
+            .hero { padding: 0 20px; }
+            #webgl-container { opacity: 0.6; } /* 手机上减弱背景以看清文字 */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 加载屏 -->
+    <div id="loader">
+        <div class="loader-text">INITIALIZING NEURAL LINK...</div>
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
+        </div>
+    </div>
+
+    <!-- Three.js 渲染容器 -->
+    <div id="webgl-container"></div>
+    <div class="overlay"></div>
+
+    <nav>
+        <div class="logo">NEXUS</div>
+        <div class="nav-items">
+            <a href="#">// 核心技术</a>
+            <a href="#">// 数据接口</a>
+            <a href="#">// 解决方案</a>
+            <a href="#">// 关于我们</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="tag"><span></span>SYSTEM ONLINE: V.4.0</div>
+            <h1 class="glitch" data-text="FUTURE INTELLIGENCE">FUTURE<br>INTELLIGENCE</h1>
+            <p class="desc">
+                下一代去中心化神经计算网络。
+                <br>通过量子纠缠算法，为您提供毫秒级的全球数据同步与智能决策支持。
+            </p>
+            <div class="btn-group">
+                <button class="btn btn-primary">立即接入</button>
+                <button class="btn btn-outline">查看文档</button>
+            </div>
+        </div>
+        
+        <div class="deco-line"></div>
+    </section>
+
+    <div class="stats-bar">
+        <div class="stat-card">
+            <span class="stat-label">ACTIVE NODES</span>
+            <span class="stat-value" id="val-1">0</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">DATA VELOCITY</span>
+            <span class="stat-value">840 TB/s</span>
+        </div>
+        <div class="stat-card" style="border-color: var(--magenta);">
+            <span class="stat-label">THREAT LEVEL</span>
+            <span class="stat-value" style="color: var(--magenta);">0.00%</span>
+        </div>
+    </div>
+
+    <script>
+        function animateStart() {
+            // --- 1. 加载动画逻辑 ---
+            const tlLoader = gsap.timeline();
+
+            tlLoader.to(".loader-progress", {
+                width: "100%",
+                duration: 1.5,
+                ease: "power2.inOut"
+            })
+            .to("#loader", {
+                y: "-100%",
+                duration: 2.0,
+                ease: "power4.inOut"
+                /*,delay: 0.2*/
+            })
+            .to("#webgl-container", {
+                opacity: 1,
+                duration: 0.2
+            }) //, "-=0.5"
+            .from(".logo", { opacity: 0, y: -20, duration: 0.5 }, "-=0.5")
+            .from(".tag", { opacity: 0, x: -20, duration: 0.5 }, "-=0.3")
+            .from("h1", { opacity: 0, scale: 1.1, duration: 0.8, ease: "back.out(1.7)" }, "-=0.3")
+            .from(".desc", { opacity: 0, x: -20, duration: 0.6 }, "-=0.4");
+
+            // 重置元素到初始状态（透明和偏移）
+            gsap.set(".btn", { opacity: 0, y: 20 });
+            gsap.set(".stat-card", { opacity: 0, y: 50 });
+
+            tlLoader.to(".btn", { opacity: 1, y: 0, stagger: 0.2, duration: 0.6 }, "-=0.4")
+            tlLoader.to(".stat-card", { opacity: 1, y: 0, stagger: 0.1, duration: 0.6 }, "-=0.2");
+
+            tlLoader.eventCallback("onComplete", () => console.log("Loader timeline finished!"));
+
+            // 数字增长动画
+            setTimeout(() => {
+                const obj = { val: 0 };
+                gsap.to(obj, {
+                    val: 9842,
+                    duration: 2,
+                    ease: "power1.out",
+                    onUpdate: () => {
+                        document.getElementById("val-1").innerText = Math.floor(obj.val).toLocaleString();
+                    }
+                });
+            }, 2500);
+        }
+
+        // --- 2. Three.js 3D 场景逻辑 ---
+        const scene = new THREE.Scene();
+        // 添加一点环境雾气，让远处更深邃
+        scene.fog = new THREE.FogExp2(0x030305, 0.002);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); // alpha: true 允许背景透明
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('webgl-container').appendChild(renderer.domElement);
+
+        // 创建粒子球体 (Particle Sphere)
+        const geometry = new THREE.IcosahedronGeometry(10, 4); // 增加分段数以获得更多点
+        const material = new THREE.PointsMaterial({
+            size: 0.08,
+            color: 0x00f3ff,
+            transparent: true,
+            opacity: 0.8,
+        });
+        
+        // 稍微打乱顶点位置，制造“故障/噪音”感
+        const positionAttribute = geometry.getAttribute( 'position' );
+        const vertex = new THREE.Vector3();
+        for ( let i = 0; i < positionAttribute.count; i ++ ) {
+            vertex.fromBufferAttribute( positionAttribute, i );
+            vertex.x += ( Math.random() - 0.5 ) * 0.5;
+            vertex.y += ( Math.random() - 0.5 ) * 0.5;
+            vertex.z += ( Math.random() - 0.5 ) * 0.5;
+            positionAttribute.setXYZ( i, vertex.x, vertex.y, vertex.z );
+        }
+
+        const sphere = new THREE.Points(geometry, material);
+        scene.add(sphere);
+
+        // 添加外层线框，增加科技感
+        const wireframeGeo = new THREE.IcosahedronGeometry(10.1, 1);
+        const wireframeMat = new THREE.MeshBasicMaterial({ 
+            color: 0xbc13fe, 
+            wireframe: true, 
+            transparent: true, 
+            opacity: 0.1 
+        });
+        const wireframeSphere = new THREE.Mesh(wireframeGeo, wireframeMat);
+        scene.add(wireframeSphere);
+
+        // 粒子星空背景
+        const starGeo = new THREE.BufferGeometry();
+        const starCount = 2000;
+        const starPos = new Float32Array(starCount * 3);
+        for(let i=0; i<starCount*3; i++) {
+            starPos[i] = (Math.random() - 0.5) * 100;
+        }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        const starMat = new THREE.PointsMaterial({
+            size: 0.05,
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.5
+        });
+        const stars = new THREE.Points(starGeo, starMat);
+        scene.add(stars);
+
+        // 摄像机位置
+        camera.position.z = 20;
+        // 将球体移到右侧
+        sphere.position.x = 8;
+        wireframeSphere.position.x = 8;
+
+        // 鼠标交互
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
+
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX - windowHalfX);
+            mouseY = (event.clientY - windowHalfY);
+        });
+
+        // 动画循环
+        const clock = new THREE.Clock();
+
+        function animate() {
+            const elapsedTime = clock.getElapsedTime();
+
+            targetX = mouseX * 0.001;
+            targetY = mouseY * 0.001;
+
+            // 球体自转 + 鼠标跟随
+            sphere.rotation.y += 0.002;
+            sphere.rotation.x += 0.001;
+            
+            // 缓动跟随鼠标
+            sphere.rotation.y += 0.05 * (targetX - sphere.rotation.y);
+            sphere.rotation.x += 0.05 * (targetY - sphere.rotation.x);
+
+            wireframeSphere.rotation.y -= 0.001; // 反向旋转
+
+            // 呼吸效果
+            const scale = 1 + Math.sin(elapsedTime) * 0.02;
+            sphere.scale.set(scale, scale, scale);
+
+            // 背景微动
+            stars.rotation.y -= 0.0005;
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // 窗口调整适配
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            
+            // 响应式调整球体位置
+            if(window.innerWidth < 768) {
+                sphere.position.x = 0;
+                wireframeSphere.position.x = 0;
+                camera.position.z = 25;
+            } else {
+                sphere.position.x = 8;
+                wireframeSphere.position.x = 8;
+                camera.position.z = 20;
+            }
+        });
+
+        // 初始化检测
+        if(window.innerWidth < 768) {
+            sphere.position.x = 0;
+            wireframeSphere.position.x = 0;
+            camera.position.z = 25;
+        }
+		console.log('init finish');
+		window.onload = () => {
+			// alert('load');
+            console.log('load finish');
+		    animateStart();
+        };
+    </script>
+</body>
+</html>
