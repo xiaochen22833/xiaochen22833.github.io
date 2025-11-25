@@ -372,6 +372,7 @@
             .nav-items { display: none; }
             .hero { padding: 0 20px; }
             #webgl-container { opacity: 0.6; } /* 手机上减弱背景以看清文字 */
+			.deco-line { display: none; }
         }
     </style>
 </head>
@@ -466,17 +467,19 @@
             tlLoader.eventCallback("onComplete", () => console.log("Loader timeline finished!"));
 
             // 数字增长动画
-            setTimeout(() => {
-                const obj = { val: 0 };
-                gsap.to(obj, {
-                    val: 9842,
-                    duration: 2,
-                    ease: "power1.out",
-                    onUpdate: () => {
-                        document.getElementById("val-1").innerText = Math.floor(obj.val).toLocaleString();
-                    }
-                });
-            }, 2500);
+            const obj = { val: 0 };
+            tlLoader.to(obj, {
+                val: 9842,
+                duration: 2,
+                ease: "power1.out",
+                onUpdate: () => {
+                    document.getElementById("val-1").innerText = Math.floor(obj.val).toLocaleString();
+                }
+            });
+
+            /*setTimeout(() => {
+
+            }, 2500);*/
         }
 
         // --- 2. Three.js 3D 场景逻辑 ---
@@ -623,7 +626,7 @@
 			// alert('load');
             console.log('load finish');
 		    animateStart();
-        };
+        }
     </script>
 </body>
 </html>
