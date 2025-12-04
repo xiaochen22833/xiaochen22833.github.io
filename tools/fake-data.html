@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虚拟数据生成器 - 在线工具箱</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 针对本页面的特有样式 */
+        .tool-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeInDown 0.5s ease-out;
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button.action-btn {
+            padding: 12px 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button.action-btn:hover {
+            background-color: #1976d2;
+            transform: translateY(-2px);
+        }
+
+        button.action-btn.secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        button.action-btn.secondary:hover {
+            background-color: #d5d5d5;
+        }
+
+        .result-area {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .data-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .data-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .data-value {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: var(--primary-color);
+        }
+        
+        /* 提示框 */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 简单的返回导航 -->
+    <div style="position: absolute; top: 20px; left: 20px; z-index: 10;">
+        <a href="../index.html" style="text-decoration: none; color: #333; font-weight: bold;">
+            <i class="fa-solid fa-arrow-left"></i> 返回首页
+        </a>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1><i class="fa-solid fa-id-card"></i> 虚拟数据生成器</h1>
+            <p>随机生成仅供测试使用的中文姓名、手机号、身份证和银行卡号</p>
+        </header>
+
+        <div class="tool-container">
+            <div class="control-panel">
+                <button class="action-btn" onclick="generateAll()">
+                    <i class="fa-solid fa-rotate"></i> 全部重新生成
+                </button>
+                <!-- 可以在这里加更多选项，比如生成数量等 -->
+            </div>
+
+            <div class="result-area">
+                <!-- 姓名 -->
+                <div class="data-item">
+                    <span class="data-label">姓名 (Name)</span>
+                    <div class="data-value" id="val-name">--</div>
+                    <button class="copy-btn" onclick="copyText('val-name')"><i class="fa-regular fa-copy"></i></button>
+                </div>
+
+                <!-- 手机号 -->
+                <div class="data-item">
+                    <span class="data-label">手机号 (Mobile)</span>
+                    <div class="data-value" id="val-mobile">--</div>
+                    <button class="copy-btn" onclick="copyText('val-mobile')"><i class="fa-regular fa-copy"></i></button>
+                </div>
+
+                <!-- 身份证 -->
+                <div class="data-item">
+                    <span class="data-label">身份证号 (ID Card)</span>
+                    <div class="data-value" id="val-idcard">--</div>
+                    <button class="copy-btn" onclick="copyText('val-idcard')"><i class="fa-regular fa-copy"></i></button>
+                </div>
+
+                <!-- 银行卡 -->
+                <div class="data-item">
+                    <span class="data-label">银行卡号 (Bank Card)</span>
+                    <div class="data-value" id="val-bank">--</div>
+                    <button class="copy-btn" onclick="copyText('val-bank')"><i class="fa-regular fa-copy"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>⚠️ 声明：本工具生成的所有数据均为随机组合的虚拟数据，仅用于开发测试，严禁用于非法用途。</p>
+        </footer>
+    </div>
+
+    <div id="toast" class="toast">已复制到剪贴板</div>
+
+    <!-- 引入生成逻辑 -->
+    <script src="fake-data.js"></script>
+    
+    <!-- 记得复用之前的背景动画 (可选) -->
+	<script src="../background.js"></script>
+</body>
+</html>
