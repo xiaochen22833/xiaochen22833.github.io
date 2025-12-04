@@ -1,323 +1,87 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8" />
-    <title>Tororo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script type="text/javascript" src="bundle.js"></script>
-    <script type="text/javascript" src="js/three.min.js"></script>
-    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>-->
-    <script src="https://www.vantajs.com/dist/vanta.birds.min.js"></script>
-    <style>
-        #body{
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            margin: 0px;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多功能工具箱</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- 引入 FontAwesome 图标库 (使用 CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+<body>
 
-<body id="body" style="background-color: #f3f4f6;"><!-- #f5f6f7 border:dashed 1px #CCC-->
-<div style="width: 100%;height: 100%;margin-top: 80px;text-align: center;">
-    <canvas id="live2dcanvas" width="300" height="400" style=""></canvas>
-</div>
-<span class="js-cursor-container"></span>
+	<!-- 在 body 的最开始，<div class="container"> 之前添加： -->
+	<canvas id="bg-canvas"></canvas>
+    <div class="container">
+        <header>
+            <h1><i class="fa-solid fa-layer-group"></i> 在线工具箱</h1>
+            <p>简单、高效、纯静态的常用工具集合</p>
+        </header>
 
-<script>
-    /** 拖尾特效 */
-    (function fairyDustCursor() {
-
-        var possibleColors = ["#D61C59", "#E7D84B", "#1B8798"]
-        var width = window.innerWidth;
-        var height = window.innerHeight;
-        var cursor = { x: width / 2, y: width / 2 };
-        var particles = [];
-
-        function init() {
-            bindEvents();
-            loop();
-        }
-
-        // Bind events that are needed
-        function bindEvents() {
-            document.addEventListener('mousemove', onMouseMove);
-            window.addEventListener('resize', onWindowResize);
-        }
-
-        function onWindowResize(e) {
-            width = window.innerWidth;
-            height = window.innerHeight;
-        }
-
-        function onMouseMove(e) {
-            cursor.x = e.clientX;
-            cursor.y = e.clientY;
-
-            addParticle(cursor.x, cursor.y, possibleColors[Math.floor(Math.random() * possibleColors.length)]);
-        }
-
-        function addParticle(x, y, color) {
-            var particle = new Particle();
-            particle.init(x, y, color);
-            particles.push(particle);
-        }
-
-        function updateParticles() {
-
-            // Updated
-            for (var i = 0; i < particles.length; i++) {
-                particles[i].update();
-            }
-
-            // Remove dead particles
-            for (var i = particles.length - 1; i >= 0; i--) {
-                if (particles[i].lifeSpan < 0) {
-                    particles[i].die();
-                    particles.splice(i, 1);
-                }
-            }
-
-        }
-
-        function loop() {
-            requestAnimationFrame(loop);
-            updateParticles();
-        }
-
-        /**
-         * Particles
-         */
-
-        function Particle() {
-
-            this.character = "*";
-            this.lifeSpan = 120; //ms
-            this.initialStyles = {
-                "position": "fixed",
-                "display": "inline-block",
-                "top": "0px",
-                "left": "0px",
-                "pointerEvents": "none",
-                "touch-action": "none",
-                "z-index": "10000000",
-                "fontSize": "25px",
-                "will-change": "transform"
-            };
-
-            // Init, and set properties
-            this.init = function (x, y, color) {
-
-                this.velocity = {
-                    x: (Math.random() < 0.5 ? -1 : 1) * (Math.random() / 2),
-                    y: 1
-                };
-
-                this.position = { x: x + 10, y: y + 10 };
-                this.initialStyles.color = color;
-
-                this.element = document.createElement('span');
-                this.element.innerHTML = this.character;
-                applyProperties(this.element, this.initialStyles);
-                this.update();
-
-                document.querySelector('.js-cursor-container').appendChild(this.element);
-            };
-
-            this.update = function () {
-                this.position.x += this.velocity.x;
-                this.position.y += this.velocity.y;
-                this.lifeSpan--;
-
-                this.element.style.transform = "translate3d(" + this.position.x + "px," + this.position.y + "px, 0) scale(" + (this.lifeSpan / 120) + ")";
-            }
-
-            this.die = function () {
-                this.element.parentNode.removeChild(this.element);
-            }
-
-        }
-
-        /**
-         * Utils
-         */
-
-        // Applies css `properties` to an element.
-        function applyProperties(target, properties) {
-            for (var key in properties) {
-                target.style[key] = properties[key];
-            }
-        }
-
-        if (!('ontouchstart' in window || navigator.msMaxTouchPoints)) init();
-    })();
-
-    /** 点击特效 */
-    (function clickEffect() {
-        let balls = [];
-        let longPressed = false;
-        let longPress;
-        let multiplier = 0;
-        let width, height;
-        let origin;
-        let normal;
-        let ctx;
-        const colours = ["#F73859", "#14FFEC", "#00E0FF", "#FF99FE", "#FAF15D"];
-        const canvas = document.createElement("canvas");
-        document.body.appendChild(canvas);
-        canvas.setAttribute("style", "width: 100%; height: 100%; top: 0; left: 0; z-index: 99999; position: fixed; pointer-events: none;");
-        const pointer = document.createElement("span");
-        pointer.classList.add("pointer");
-        document.body.appendChild(pointer);
-
-        if (canvas.getContext && window.addEventListener) {
-            ctx = canvas.getContext("2d");
-            updateSize();
-            window.addEventListener('resize', updateSize, false);
-            loop();
-            window.addEventListener("mousedown", function(e) {
-                pushBalls(randBetween(10, 20), e.clientX, e.clientY);
-                document.body.classList.add("is-pressed");
-                longPress = setTimeout(function(){
-                    document.body.classList.add("is-longpress");
-                    longPressed = true;
-                }, 500);
-            }, false);
-            window.addEventListener("mouseup", function(e) {
-                clearInterval(longPress);
-                if (longPressed == true) {
-                    document.body.classList.remove("is-longpress");
-                    pushBalls(randBetween(50 + Math.ceil(multiplier), 100 + Math.ceil(multiplier)), e.clientX, e.clientY);
-                    longPressed = false;
-                }
-                document.body.classList.remove("is-pressed");
-            }, false);
-            window.addEventListener("mousemove", function(e) {
-                let x = e.clientX;
-                let y = e.clientY;
-                pointer.style.top = y + "px";
-                pointer.style.left = x + "px";
-            }, false);
-        } else {
-            console.log("canvas or addEventListener is unsupported!");
-        }
+        <main class="grid-container" id="tools-grid">
+            <!-- 卡片将在这里生成，目前先放几个占位符 -->
+            
+            <!-- 示例卡片 1 -->
+			<a href="tools/fake-data.html" class="card">
+				<div class="icon-box" style="background: #e8f5e9; color: #4caf50;">
+					<i class="fa-solid fa-id-card"></i>
+				</div>
+				<h3>虚拟数据生成</h3>
+				<p>随机生成中文姓名、手机号、身份证和银行卡号</p>
+				<div class="arrow">→</div>
+			</a>
 
 
-        function updateSize() {
-            canvas.width = window.innerWidth * 2;
-            canvas.height = window.innerHeight * 2;
-            canvas.style.width = window.innerWidth + 'px';
-            canvas.style.height = window.innerHeight + 'px';
-            ctx.scale(2, 2);
-            width = (canvas.width = window.innerWidth);
-            height = (canvas.height = window.innerHeight);
-            origin = {
-                x: width / 2,
-                y: height / 2
-            };
-            normal = {
-                x: width / 2,
-                y: height / 2
-            };
-        }
-        class Ball {
-            constructor(x = origin.x, y = origin.y) {
-                this.x = x;
-                this.y = y;
-                this.angle = Math.PI * 2 * Math.random();
-                if (longPressed == true) {
-                    this.multiplier = randBetween(14 + multiplier, 15 + multiplier);
-                } else {
-                    this.multiplier = randBetween(6, 12);
-                }
-                this.vx = (this.multiplier + Math.random() * 0.5) * Math.cos(this.angle);
-                this.vy = (this.multiplier + Math.random() * 0.5) * Math.sin(this.angle);
-                this.r = randBetween(8, 12) + 3 * Math.random();
-                this.color = colours[Math.floor(Math.random() * colours.length)];
-            }
-            update() {
-                this.x += this.vx - normal.x;
-                this.y += this.vy - normal.y;
-                normal.x = -2 / window.innerWidth * Math.sin(this.angle);
-                normal.y = -2 / window.innerHeight * Math.cos(this.angle);
-                this.r -= 0.3;
-                this.vx *= 0.9;
-                this.vy *= 0.9;
-            }
-        }
+            <!-- 示例卡片 2 -->
+            <a href="tools/timestamp-converter.html" class="card">
+				<div class="icon-box" style="background: #e0f7fa; color: #00bcd4;">
+					<i class="fa-solid fa-clock-rotate-left"></i>
+				</div>
+				<h3>时间戳转换</h3>
+				<p>日期与毫秒/秒时间戳相互转换</p>
+				<div class="arrow">→</div>
+			</a>
+			
+			<!-- 示例卡片 3 -->
+			<a href="tools/json-formatter.html" class="card">
+				<div class="icon-box" style="background: #e3f2fd; color: #2196f3;">
+					<i class="fa-solid fa-code"></i>
+				</div>
+				<h3>JSON 格式化与校验</h3>
+				<p>美化、压缩和验证 JSON 数据</p>
+				<div class="arrow">→</div>
+			</a>
+			
+			<!-- 示例卡片 4 -->
+			<a href="https://www.xiaolvfang.com" class="card">
+				<div class="icon-box" style="background: #e3f2fd; color: #2196f3;">
+					<i class="fa-solid fa-code"></i>
+				</div>
+				<h3>效率坊视频解析工具</h3>
+				<p>免费、无广、高效视频下载</p>
+				<div class="arrow">→</div>
+			</a>
 
-        function pushBalls(count = 1, x = origin.x, y = origin.y) {
-            for (let i = 0; i < count; i++) {
-                balls.push(new Ball(x, y));
-            }
-        }
+            <!-- 示例卡片 3 (待开发) -->
+            <div class="card disabled">
+                <div class="icon-box" style="background: #f3f3f3; color: #999;">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3>敬请期待</h3>
+                <p>更多功能开发中...</p>
+            </div>
 
-        function randBetween(min, max) {
-            return Math.floor(Math.random() * max) + min;
-        }
+        </main>
 
-        function loop() {
-            ctx.fillStyle = "rgba(255, 255, 255, 0)";
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let i = 0; i < balls.length; i++) {
-                let b = balls[i];
-                if (b.r < 0) continue;
-                ctx.fillStyle = b.color;
-                ctx.beginPath();
-                ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2, false);
-                ctx.fill();
-                b.update();
-            }
-            if (longPressed == true) {
-                multiplier += 0.2;
-            } else if (!longPressed && multiplier >= 0) {
-                multiplier -= 0.4;
-            }
-            removeBall();
-            requestAnimationFrame(loop);
-        }
+        <footer>
+            <p>&copy; 2024 My Tools. Pure Static & Fast.</p>
+        </footer>
+    </div>
 
-        function removeBall() {
-            for (let i = 0; i < balls.length; i++) {
-                let b = balls[i];
-                if (b.x + b.r < 0 || b.x - b.r > width || b.y + b.r < 0 || b.y - b.r > height || b.r < 0) {
-                    balls.splice(i, 1);
-                }
-            }
-        }
-    })();
-
-    /** 看板猫 */
-    (function kanban(){
-        var width = 300;
-        var height = 400;
-        var modelName = "tororo";
-        var headPos = 0.5;
-        var scaling = 2;
-        var opacityDefault = 0.7;
-        var opacityHover = 1;
-        var modelUrl="./assets/name/name.model.json";
-        document.getElementById("live2dcanvas").style.width = width + 'px';
-        document.getElementById("live2dcanvas").style.height = height + 'px';
-        modelUrl = modelUrl.replace(/name/g, modelName);
-        console.log(modelUrl);
-        // 传入id, 模型path, 重心， 缩放， 默认透明， hover透明度
-        loadlive2d("live2dcanvas", modelUrl);
-    })();
-
-    /** Vanta birds */
-    VANTA.BIRDS({
-      el: "#body",
-      mouseControls: true,
-      touchControls: true,
-      gyroControls: false,
-      minHeight: 200.00,
-      minWidth: 200.00,
-      scale: 1.00,
-      scaleMobile: 1.00,
-      backgroundColor: 0xf3f4f6
-    })
-
-</script>
+	<!-- 在 body 的最底部，</body> 之前添加： -->
+	<button id="weather-toggle" title="切换天气特效">
+		<i class="fa-solid fa-cloud-sun"></i>
+	</button>
+	<script src="background.js"></script>
 </body>
 </html>
