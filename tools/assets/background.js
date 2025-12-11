@@ -7,7 +7,7 @@ const mouse = { x: -100, y: -100 };
 
 // 天气状态枚举
 const WEATHER_TYPES = ['SUNNY', 'RAIN', 'SNOW'];
-let currentWeatherIndex = localStorage.getItem('WeatherIndex') || 0;
+let currentWeatherIndex = localStorage.getItem('WeatherIndex') || 2;
 
 // 粒子数组
 let particles = [];
