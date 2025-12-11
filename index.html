@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>多功能工具箱</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./tools/assets/style.css">
     <!-- 引入 FontAwesome 图标库 (使用 CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -53,12 +53,22 @@
 			</a>
 			
 			<!-- 示例卡片 4 -->
-			<a href="https://www.xiaolvfang.com" class="card">
+			<a href="https://www.xiaolvfang.com" class="card" target="_blank" rel="noopener noreferrer">
 				<div class="icon-box" style="background: #e3f2fd; color: #2196f3;">
 					<i class="fa-solid fa-code"></i>
 				</div>
 				<h3>效率坊视频解析工具</h3>
 				<p>免费、无广、高效视频下载</p>
+				<div class="arrow">→</div>
+			</a>
+			
+			<!-- 示例卡片 5 -->
+			<a href="tools/qr-generator.html" class="card">
+				<div class="icon-box" style="background: #e0f2f7; color: #007bb6;">
+					<i class="fa-solid fa-qrcode"></i>
+				</div>
+				<h3>二维码生成器</h3>
+				<p>输入内容，自定义颜色和尺寸生成二维码</p>
 				<div class="arrow">→</div>
 			</a>
 
@@ -82,6 +92,6 @@
 	<button id="weather-toggle" title="切换天气特效">
 		<i class="fa-solid fa-cloud-sun"></i>
 	</button>
-	<script src="background.js"></script>
+	<script src="./tools/assets/background.js"></script>
 </body>
 </html>

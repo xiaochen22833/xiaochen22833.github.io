@@ -7,7 +7,7 @@ const mouse = { x: -100, y: -100 };
 
 // 天气状态枚举
 const WEATHER_TYPES = ['SUNNY', 'RAIN', 'SNOW'];
-let currentWeatherIndex = 0;
+let currentWeatherIndex = localStorage.getItem('WeatherIndex') || 0;
 
 // 粒子数组
 let particles = [];
@@ -201,6 +201,7 @@ function animate() {
 // 切换按钮逻辑
 document.getElementById('weather-toggle').addEventListener('click', () => {
     currentWeatherIndex = (currentWeatherIndex + 1) % WEATHER_TYPES.length;
+	localStorage.setItem('WeatherIndex', currentWeatherIndex); // 保存
     initParticles();
 });
 
