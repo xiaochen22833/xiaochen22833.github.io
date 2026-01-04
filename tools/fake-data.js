@@ -105,11 +105,47 @@ function generateBankCard() {
     return content + checkDigit;
 }
 
+// 5. 生成社会统一信用代码
+function generateFakeSocialCreditCode() {
+    const charset = '0123456789ABCDEFGHJKLMNPQRTUWXY'; // 31个合法字符
+    const weights = [1, 3, 9, 27, 19, 26, 16, 17, 20, 29, 25, 13, 8, 24, 10, 30, 28];
+
+    // 1. 前2位：常用示例（91=企业，52=社会组织，12=机关法人等）
+    const first2 = '91'; // 企业类最常见
+
+    // 2. 第3-8位：行政区划码（这里固定用北京市东城区 110101）
+    const regionCode = '110101';
+
+    // 3. 第9-17位：9位随机主体标识（使用合法字符）
+    let body9 = '';
+    for (let i = 0; i < 9; i++) {
+        const randomIndex = Math.floor(Math.random() * charset.length);
+        body9 += charset[randomIndex];
+    }
+
+    // 前17位拼接
+    const code17 = first2 + regionCode + body9;
+
+    // 4. 计算校验码（第18位）
+    let sum = 0;
+    for (let i = 0; i < 17; i++) {
+        const char = code17[i];
+        const index = charset.indexOf(char);
+        if (index === -1) throw new Error('Invalid character in code');
+        sum += index * weights[i];
+    }
+
+    const checkCodeIndex = (31 - (sum % 31)) % 31;
+    const checkChar = charset[checkCodeIndex];
+
+    return code17 + checkChar;
+}
+
 // ----------------- 界面交互 -----------------
 
 function generateAll() {
     // 增加一点随机动画延迟感
-    const elements = ['val-name', 'val-mobile', 'val-idcard', 'val-bank'];
+    const elements = ['val-name', 'val-mobile', 'val-idcard', 'val-bank', 'val-socialCode'];
     elements.forEach(id => {
         document.getElementById(id).style.opacity = 0.5;
     });
@@ -119,6 +155,7 @@ function generateAll() {
         document.getElementById('val-mobile').innerText = generateMobile();
         document.getElementById('val-idcard').innerText = generateIdCard();
         document.getElementById('val-bank').innerText = generateBankCard();
+        document.getElementById('val-socialCode').innerText = generateFakeSocialCreditCode();
 
         elements.forEach(id => {
             document.getElementById(id).style.opacity = 1;
