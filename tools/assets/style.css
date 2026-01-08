@@ -19,7 +19,7 @@
 
 body {
     /* 去掉原来的背景色，改由 Canvas 接管 */
-    background-color: transparent; 
+    background-color: var(--bg-color);
     /* 保持原来的布局属性 */
     color: var(--text-color);
     min-height: 100vh;
@@ -81,12 +81,16 @@ header {
 header h1 {
     font-size: 2.5rem;
     margin-bottom: 10px;
-    color: var(--card-bg);
+    color: #2c3e50;
 }
 
 header p {
-    color: var(--card-bg);
+    color: #666;
     font-size: 1.1rem;
+}
+
+.home h1, .home p {
+    color: var(--card-bg);
 }
 
 /* 网格布局 */

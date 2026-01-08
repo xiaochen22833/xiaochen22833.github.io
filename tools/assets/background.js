@@ -199,11 +199,14 @@ function animate() {
 }
 
 // 切换按钮逻辑
-document.getElementById('weather-toggle').addEventListener('click', () => {
-    currentWeatherIndex = (currentWeatherIndex + 1) % WEATHER_TYPES.length;
-	localStorage.setItem('WeatherIndex', currentWeatherIndex); // 保存
-    initParticles();
-});
+let weatherBtn = document.getElementById('weather-toggle');
+if (weatherBtn) {
+    weatherBtn.addEventListener('click', () => {
+        currentWeatherIndex = (currentWeatherIndex + 1) % WEATHER_TYPES.length;
+        localStorage.setItem('WeatherIndex', currentWeatherIndex); // 保存
+        initParticles();
+    });
+}
 
 // 启动
 resize();
