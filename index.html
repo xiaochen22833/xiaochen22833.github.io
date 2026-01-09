@@ -16,8 +16,11 @@
     <div class="container home">
         <header>
             <h1><i class="fa-solid fa-layer-group"></i> 在线工具箱</h1>
+			<!-- 显示访问次数的地方 -->
             <p>简单、高效、纯静态的常用工具集合</p>
-        </header>
+			<p>全网累计访问 <span id="page_pv">加载中...</span> 次</p>
+			<div style="display: none;"><img src="https://visitor-badge.laobi.icu/badge?page_id=xiaochen22833.github.io"></div>
+		</header>
 
         <main class="grid-container" id="tools-grid">
             <!-- 卡片将在这里生成，目前先放几个占位符 -->
@@ -114,5 +117,7 @@
 		<i class="fa-solid fa-cloud-sun"></i>
 	</button>
 	<script src="./tools/assets/background.js"></script>
+	<!-- 引入 WebViso 脚本 -->
+	<script async src="//webviso.yestool.org/js/index.min.js"></script>
 </body>
 </html>
