@@ -1,3 +1,15 @@
+// 移除已有的 favicon 链接
+const existingLinks = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]');
+if (existingLinks.length === 0) {
+    // 添加新的 favicon
+    const newLink = document.createElement('link');
+    newLink.rel = 'icon';
+    newLink.type = 'image/png';
+    newLink.href = './assets/icons/tool-ico3.png';
+
+    document.head.appendChild(newLink);
+}
+
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
 let width, height;
