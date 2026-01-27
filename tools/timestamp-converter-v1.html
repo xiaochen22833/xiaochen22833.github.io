@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时间戳转换器 - 在线工具箱</title>
+    <link rel="stylesheet" href="./assets/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 针对本页面的特有样式 */
+        .tool-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeInDown 0.5s ease-out;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .input-group textarea,
+        .input-group input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .input-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .input-group textarea:focus,
+        .input-group input[type="text"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+            outline: none;
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button.action-btn {
+            padding: 12px 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button.action-btn:hover {
+            background-color: #1976d2;
+            transform: translateY(-2px);
+        }
+
+        button.action-btn.secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        button.action-btn.secondary:hover {
+            background-color: #d5d5d5;
+        }
+
+        .result-group {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .result-group h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #444;
+            font-size: 1rem;
+        }
+
+        .result-group p {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            word-break: break-all;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+        }
+        .result-group p .copy-btn {
+            position: static;
+            margin-left: 10px;
+            padding: 5px;
+            font-size: 0.9em;
+        }
+        .result-group p .copy-btn:hover {
+            background: #eee;
+            border-radius: 4px;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: -15px;
+            margin-bottom: 15px;
+            min-height: 20px;
+        }
+
+        /* 提示框 */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 简单的返回导航 -->
+    <div style="position: absolute; top: 20px; left: 20px; z-index: 10;">
+        <a href="../index.html" style="text-decoration: none; color: #333; font-weight: bold;">
+            <i class="fa-solid fa-arrow-left"></i> 返回首页
+        </a>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1><i class="fa-solid fa-clock"></i> 时间戳转换器</h1>
+            <p>毫秒/秒时间戳与日期时间字符串相互转换</p>
+        </header>
+
+        <div class="tool-container">
+            <div class="input-group">
+                <label for="timestampInput">时间戳 (毫秒或秒):</label>
+                <input type="text" id="timestampInput" placeholder="输入毫秒或秒时间戳，例如: 1678886400000 或 1678886400">
+                <div class="error-message" id="timestampError"></div>
+            </div>
+
+            <div class="input-group">
+                <label for="datetimeInput">日期时间字符串 (支持多种格式):</label>
+                <input type="text" id="datetimeInput" placeholder="输入日期时间，例如: 2023-03-15 08:00:00.123 或 2023/3/15">
+                <div class="error-message" id="datetimeError"></div>
+            </div>
+
+            <div class="control-panel">
+                <button class="action-btn" onclick="convertTimestampToDatetime()">
+                    <i class="fa-solid fa-arrow-down"></i> 时间戳转日期
+                </button>
+                <button class="action-btn" onclick="convertDatetimeToTimestamp()">
+                    <i class="fa-solid fa-arrow-up"></i> 日期转时间戳
+                </button>
+                <button class="action-btn secondary" onclick="resetFields()">
+                    <i class="fa-solid fa-eraser"></i> 清空
+                </button>
+            </div>
+
+            <div class="result-group">
+                <h4>转换结果:</h4>
+                <p>毫秒时间戳: <span id="resultTimestampMs">--</span> <button class="copy-btn" onclick="copyText('resultTimestampMs')"><i class="fa-regular fa-copy"></i></button></p>
+                <p>秒时间戳: <span id="resultTimestampSec">--</span> <button class="copy-btn" onclick="copyText('resultTimestampSec')"><i class="fa-regular fa-copy"></i></button></p>
+                <p>日期时间 (精确到毫秒): <span id="resultDatetimeMs">--</span> <button class="copy-btn" onclick="copyText('resultDatetimeMs')"><i class="fa-regular fa-copy"></i></button></p>
+                <p>日期时间 (精确到秒): <span id="resultDatetimeSec">--</span> <button class="copy-btn" onclick="copyText('resultDatetimeSec')"><i class="fa-regular fa-copy"></i></button></p>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2024 My Tools. Pure Static & Fast.</p>
+        </footer>
+    </div>
+
+    <div id="toast" class="toast">已复制到剪贴板</div>
+
+    <script src="timestamp-converter.js"></script>
+    <script src="./assets/background.js"></script>
+</body>
+</html>

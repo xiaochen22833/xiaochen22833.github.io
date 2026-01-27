@@ -3,204 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>时间戳转换器 - 在线工具箱</title>
-    <link rel="stylesheet" href="./assets/style.css">
+    <title>时间戳转换 - 在线工具箱</title>
+    <link rel="stylesheet" href="assets/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 针对本页面的特有样式 */
-        .tool-container {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: var(--card-shadow);
-            max-width: 800px;
+        /* 布局特有样式 */
+        .ts-container {
+            max-width: 1000px;
             margin: 0 auto;
-            animation: fadeInDown 0.5s ease-out;
-        }
-
-        .input-group {
-            margin-bottom: 25px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 20px;
         }
 
-        .input-group label {
+        .ts-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #eef2f7;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        /* 当前时间戳区块 */
+        .current-box h3 {
+            font-size: 1rem;
+            color: #333;
+            margin-bottom: 15px;
             font-weight: 600;
-            color: #555;
-            font-size: 0.95rem;
         }
-
-        .input-group textarea,
-        .input-group input[type="text"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        .input-group textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-
-        .input-group textarea:focus,
-        .input-group input[type="text"]:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
-            outline: none;
-        }
-
-        .control-panel {
+        .current-val-wrapper {
             display: flex;
-            gap: 15px;
-            margin-top: 30px;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .current-val {
+            font-size: 2.5rem;
+            font-family: 'Consolas', monospace;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .current-unit { color: #666; }
+
+        .btn-group { display: flex; gap: 10px; }
+        
+        /* 转换面板 */
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            padding: 4px;
+            border-radius: 8px;
             margin-bottom: 25px;
-            flex-wrap: wrap;
-            justify-content: center;
+            border: 1px solid #eee;
+        }
+        .tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #666;
+            transition: all 0.3s;
+        }
+        .tab-item.active {
+            background: #fff;
+            color: #333;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            font-weight: 600;
         }
 
-        button.action-btn {
-            padding: 12px 25px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.3s, transform 0.2s;
+        /* 转换行样式 */
+        .convert-section { margin-bottom: 30px; }
+        .section-title {
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-
-        button.action-btn:hover {
-            background-color: #1976d2;
-            transform: translateY(-2px);
-        }
-
-        button.action-btn.secondary {
-            background-color: #e0e0e0;
-            color: #333;
-        }
-        button.action-btn.secondary:hover {
-            background-color: #d5d5d5;
-        }
-
-        .result-group {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        .result-group h4 {
-            margin-top: 0;
-            margin-bottom: 10px;
+            font-weight: 600;
             color: #444;
+            margin-bottom: 15px;
             font-size: 1rem;
         }
-
-        .result-group p {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #333;
-            word-break: break-all;
+        
+        .row-group {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 5px 0;
-        }
-        .result-group p .copy-btn {
-            position: static;
-            margin-left: 10px;
-            padding: 5px;
-            font-size: 0.9em;
-        }
-        .result-group p .copy-btn:hover {
-            background: #eee;
-            border-radius: 4px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
-        .error-message {
-            color: #e74c3c;
-            font-size: 0.9rem;
-            margin-top: -15px;
-            margin-bottom: 15px;
-            min-height: 20px;
+        .ts-input {
+            flex: 1;
+            min-width: 200px;
+            height: 40px;
+            padding: 0 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .ts-select {
+            height: 40px;
+            padding: 0 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #fff;
+            min-width: 100px;
+        }
+        .btn-black {
+            height: 40px;
+            padding: 0 20px;
+            background: #2c3e50;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn-black:hover { opacity: 0.9; }
+
+        .action-btn {
+            height: 40px;
+            padding: 0 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .action-btn:hover { opacity: 0.9; }
+
+        .btn-red { background: #e74c3c !important; color: white !important; }
+        .btn-green { background: rgb(22, 163, 74) !important; color: white !important; }
+        .secondary { color: #333 !important;}
+
+        .result-input {
+            background-color: #fcfcfc;
+            border-color: #eee;
+            color: #555;
         }
 
-        /* 提示框 */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            z-index: 1000;
-        }
-        .toast.show {
-            opacity: 1;
-        }
+        footer { text-align: center; margin-top: 40px; color: #999; font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
-    <!-- 简单的返回导航 -->
-    <div style="position: absolute; top: 20px; left: 20px; z-index: 10;">
+    <div style="position: absolute; top: 20px; left: 20px;">
         <a href="../index.html" style="text-decoration: none; color: #333; font-weight: bold;">
             <i class="fa-solid fa-arrow-left"></i> 返回首页
         </a>
     </div>
 
-    <div class="container">
-        <header>
-            <h1><i class="fa-solid fa-clock"></i> 时间戳转换器</h1>
-            <p>毫秒/秒时间戳与日期时间字符串相互转换</p>
-        </header>
+    <div class="container" style="padding-top: 60px;">
+        <div class="ts-container">
+            <header>
+                <h1><i class="fa-solid fa-clock"></i> 时间戳转换器</h1>
+                <p>毫秒/秒时间戳与日期时间字符串相互转换</p>
+            </header>
 
-        <div class="tool-container">
-            <div class="input-group">
-                <label for="timestampInput">时间戳 (毫秒或秒):</label>
-                <input type="text" id="timestampInput" placeholder="输入毫秒或秒时间戳，例如: 1678886400000 或 1678886400">
-                <div class="error-message" id="timestampError"></div>
+            <!-- 当前时间戳 -->
+            <div class="ts-card current-box">
+                <h3>当前时间戳</h3>
+                <div class="current-val-wrapper">
+                    <span class="current-val" id="currentTS">1769496037</span>
+                    <span class="current-unit" id="currentUnitText">秒(s)</span>
+                </div>
+                <div class="btn-group">
+                    <button class="action-btn secondary" style="background:#fff; border:1px solid #ddd;" onclick="toggleUnit()">
+                        <i class="fa-solid fa-rotate"></i> 切换单位
+                    </button>
+                    <button class="action-btn secondary" style="background:#fff; border:1px solid #ddd;" onclick="copyCurrent()">
+                        <i class="fa-regular fa-copy"></i> 复制
+                    </button>
+                    <button class="action-btn btn-red" id="stopBtn" onclick="toggleTimer()">
+                        <i class="fa-solid fa-stop"></i> 停止
+                    </button>
+                </div>
             </div>
 
-            <div class="input-group">
-                <label for="datetimeInput">日期时间字符串 (支持多种格式):</label>
-                <input type="text" id="datetimeInput" placeholder="输入日期时间，例如: 2023-03-15 08:00:00.123 或 2023/3/15">
-                <div class="error-message" id="datetimeError"></div>
-            </div>
+            <!-- 转换面板 -->
+            <div class="ts-card">
+                <!--<div class="tabs">
+                    <div class="tab-item active">单个转换</div>
+                    <div class="tab-item">批量转换</div>
+                </div>-->
 
-            <div class="control-panel">
-                <button class="action-btn" onclick="convertTimestampToDatetime()">
-                    <i class="fa-solid fa-arrow-down"></i> 时间戳转日期
-                </button>
-                <button class="action-btn" onclick="convertDatetimeToTimestamp()">
-                    <i class="fa-solid fa-arrow-up"></i> 日期转时间戳
-                </button>
-                <button class="action-btn secondary" onclick="resetFields()">
-                    <i class="fa-solid fa-eraser"></i> 清空
-                </button>
-            </div>
+                <!-- 时间戳转日期 -->
+                <div class="convert-section">
+                    <div class="section-title">
+                        <i class="fa-regular fa-clock"></i> 时间戳转日期时间
+                    </div>
+                    <div class="row-group">
+                        <input type="text" class="ts-input" id="tsToDate_input" placeholder="请输入时间戳">
+                        <select class="ts-select" id="tsToDate_unit">
+                            <option value="s">秒(s)</option>
+                            <option value="ms">毫秒(ms)</option>
+                        </select>
+                        <button class="btn-black" onclick="convertTsToDate()">转换</button>
+                        <input type="text" class="ts-input result-input" id="tsToDate_result" readonly placeholder="转换结果">
+                        <select class="ts-select" style="min-width:140px;">
+                            <option>Asia/Shanghai</option>
+                        </select>
+                    </div>
+                </div>
 
-            <div class="result-group">
-                <h4>转换结果:</h4>
-                <p>毫秒时间戳: <span id="resultTimestampMs">--</span> <button class="copy-btn" onclick="copyText('resultTimestampMs')"><i class="fa-regular fa-copy"></i></button></p>
-                <p>秒时间戳: <span id="resultTimestampSec">--</span> <button class="copy-btn" onclick="copyText('resultTimestampSec')"><i class="fa-regular fa-copy"></i></button></p>
-                <p>日期时间 (精确到毫秒): <span id="resultDatetimeMs">--</span> <button class="copy-btn" onclick="copyText('resultDatetimeMs')"><i class="fa-regular fa-copy"></i></button></p>
-                <p>日期时间 (精确到秒): <span id="resultDatetimeSec">--</span> <button class="copy-btn" onclick="copyText('resultDatetimeSec')"><i class="fa-regular fa-copy"></i></button></p>
+                <!-- 日期转时间戳 -->
+                <div class="convert-section" style="margin-bottom: 0;">
+                    <div class="section-title">
+                        <i class="fa-regular fa-calendar-check"></i> 日期时间转时间戳
+                    </div>
+                    <div class="row-group">
+                        <input type="text" class="ts-input" id="dateToTs_input" placeholder="YYYY-MM-DD HH:mm:ss">
+                        <select class="ts-select" style="min-width:140px;">
+                            <option>Asia/Shanghai</option>
+                        </select>
+                        <button class="btn-black" onclick="convertDateToTs()">转换</button>
+                        <input type="text" class="ts-input result-input" id="dateToTs_result" readonly placeholder="转换结果">
+                        <select class="ts-select" id="dateToTs_unit">
+                            <option value="s">秒(s)</option>
+                            <option value="ms">毫秒(ms)</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -209,9 +231,7 @@
         </footer>
     </div>
 
-    <div id="toast" class="toast">已复制到剪贴板</div>
-
     <script src="timestamp-converter.js"></script>
-    <script src="./assets/background.js"></script>
+    <script src="assets/background.js"></script>
 </body>
 </html>
