@@ -199,7 +199,7 @@
                         </select>
                         <button class="btn-black" onclick="convertTsToDate()">转换</button>
                         <input type="text" class="ts-input result-input" id="tsToDate_result" readonly placeholder="转换结果">
-                        <select class="ts-select" style="min-width:140px;">
+                        <select class="ts-select" disabled style="min-width:140px;">
                             <option>Asia/Shanghai</option>
                         </select>
                     </div>
@@ -212,7 +212,7 @@
                     </div>
                     <div class="row-group">
                         <input type="text" class="ts-input" id="dateToTs_input" placeholder="YYYY-MM-DD HH:mm:ss">
-                        <select class="ts-select" style="min-width:140px;">
+                        <select class="ts-select" disabled style="min-width:140px;">
                             <option>Asia/Shanghai</option>
                         </select>
                         <button class="btn-black" onclick="convertDateToTs()">转换</button>
@@ -230,6 +230,8 @@
             <p>&copy; 2024 My Tools. Pure Static & Fast.</p>
         </footer>
     </div>
+
+    <div id="toast" class="toast">已复制到剪贴板</div>
 
     <script src="timestamp-converter.js"></script>
     <script src="assets/background.js"></script>

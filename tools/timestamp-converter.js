@@ -53,8 +53,19 @@ function toggleUnit() {
 // 4. 复制当前
 function copyCurrent() {
     const val = currentTSDisplay.innerText;
-    navigator.clipboard.writeText(val);
-    alert('已复制: ' + val);
+    navigator.clipboard.writeText(val).then(() => {
+        showToast(`已复制: ${val}`);
+    }).catch(err => {
+        console.error('无法复制', err);
+        // 降级处理（如果不支持 clipboard API）
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        showToast(`已复制: ${val}`);
+    });
 }
 
 // 5. 时间戳转日期
@@ -103,6 +114,16 @@ function formatDate(date) {
     const mm = String(date.getMinutes()).padStart(2, '0');
     const ss = String(date.getSeconds()).padStart(2, '0');
     return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+}
+
+// 显示提示
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2000);
 }
 
 // 页面初始化
